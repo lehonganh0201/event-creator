@@ -1,5 +1,10 @@
 package gui;
-
+/*
+ * @author HongAnh
+ * @created 07 / 02 / 2024 - 5:03 PM
+ * @project IntelliJ IDEA
+ * @social Github: https://github.com/lehonganh0201
+ */
 
 import domain.Event;
 import service.UserService;
@@ -47,11 +52,14 @@ public class ButtonEditor extends DefaultCellEditor{
     public Object getCellEditorValue() {
         if (isPushed) {
             if ("+".equals(label) && currentEvent.getEventId()!=0) {
-                userService.registerForEvent(LoginFrame.user, currentEvent);
+                userService.registerForEvent(LoginFrame.user, currentEvent,true);
             }
             else if ("->".equals(label)){
-                viewEventDetailsFrame viewEventDetailsFrame = new viewEventDetailsFrame(currentEvent);
-                viewEventDetailsFrame.setVisible(true);
+                RegisteredEventsFrame.getInstance().openDetailFrame(currentEvent);
+            }
+            else if("Show more".equals(label)){
+                RegistedUserFrame frame = new RegistedUserFrame(currentEvent);
+                frame.setVisible(true);
             }
         }
         isPushed = false;

@@ -4,9 +4,11 @@ package gui;
 import domain.User;
 import service.UserService;
 
-/**
- *
- * @author PC
+/*
+ * @author HongAnh
+ * @created 07 / 02 / 2024 - 5:03 PM
+ * @project IntelliJ IDEA
+ * @social Github: https://github.com/lehonganh0201
  */
 public class LoginFrame extends javax.swing.JFrame {
 

@@ -58,8 +58,8 @@ public class UserService {
     }
 
     
-    public boolean registerForEvent(User user, Event event) {
-        return userRepository.registerForEvent(user,event);
+    public boolean registerForEvent(User user, Event event,boolean check) {
+        return userRepository.registerForEvent(user,event,check);
     }
 
     public Event getEventById(Integer id){

@@ -3,16 +3,20 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 package gui;
-
-import java.security.AuthProvider;
+/*
+ * @author HongAnh
+ * @created 07 / 02 / 2024 - 5:03 PM
+ * @project IntelliJ IDEA
+ * @social Github: https://github.com/lehonganh0201
+ */
 import java.sql.Date;
 import java.text.SimpleDateFormat;
-import java.util.Properties;
 
 import domain.Event;
 import org.jdatepicker.impl.JDatePanelImpl;
 import org.jdatepicker.impl.JDatePickerImpl;
 import org.jdatepicker.impl.UtilDateModel;
+import service.EventService;
 import service.UserService;
 
 /**
@@ -25,6 +29,7 @@ public class CreateEventFrame extends javax.swing.JFrame {
      * Creates new form CreateEventFrame
      */
     public CreateEventFrame() {
+        eventService = new EventService();
         userService = new UserService();
         initComponents();
         setLocationRelativeTo(null);
@@ -258,7 +263,14 @@ public class CreateEventFrame extends javax.swing.JFrame {
         event.setCapacity(capacity);
         event.setCreationUserId(LoginFrame.user.getUserId());
 
-        userService.createEvent(event);
+        try{
+            userService.createEvent(event);
+            //Event newEvent = eventService.getEventByInfo(event);
+            //userService.registerForEvent(LoginFrame.user,newEvent,false);
+            eventService.insertUserRole(LoginFrame.user,2);
+        }catch (Exception e){
+            System.out.println(e);
+        }
     }
 
     private void BackBtnActionPerformed(java.awt.event.ActionEvent evt) {
@@ -287,5 +299,6 @@ public class CreateEventFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private final UserService userService;
+    private final EventService eventService;
     // End of variables declaration
 }

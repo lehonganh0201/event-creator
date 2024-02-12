@@ -4,9 +4,11 @@
  */
 package gui;
 
-/**
- *
- * @author PC
+/*
+ * @author HongAnh
+ * @created 07 / 02 / 2024 - 5:03 PM
+ * @project IntelliJ IDEA
+ * @social Github: https://github.com/lehonganh0201
  */
 public class MainScreen extends javax.swing.JFrame {
 
@@ -24,6 +26,7 @@ public class MainScreen extends javax.swing.JFrame {
         RegisterEvent = new javax.swing.JButton();
         createEventBtn = new javax.swing.JButton();
         backLogin = new javax.swing.JButton();
+        managerEventBtn = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -70,22 +73,32 @@ public class MainScreen extends javax.swing.JFrame {
             }
         });
 
+        managerEventBtn.setBackground(new java.awt.Color(255, 153, 255));
+        managerEventBtn.setFont(new java.awt.Font("Segoe UI", 0, 24)); // NOI18N
+        managerEventBtn.setText("Manager Event");
+        managerEventBtn.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                managerEventBtnActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addGap(152, 152, 152)
+                                .addComponent(backLogin)
+                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addComponent(EditProfile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(showListEvent, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                         .addComponent(RegisterEvent, javax.swing.GroupLayout.DEFAULT_SIZE, 388, Short.MAX_VALUE)
-                                        .addComponent(createEventBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                        .addComponent(createEventBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(managerEventBtn, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                                 .addContainerGap())
-                        .addGroup(layout.createSequentialGroup()
-                                .addGap(147, 147, 147)
-                                .addComponent(backLogin)
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -98,7 +111,9 @@ public class MainScreen extends javax.swing.JFrame {
                                 .addComponent(RegisterEvent)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(createEventBtn)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 201, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(managerEventBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
                                 .addComponent(backLogin)
                                 .addContainerGap())
         );
@@ -136,9 +151,16 @@ public class MainScreen extends javax.swing.JFrame {
         dispose();
     }
 
+    private void managerEventBtnActionPerformed(java.awt.event.ActionEvent evt) {
+        ManagerEventFrame managerEventFrame = new ManagerEventFrame(LoginFrame.user);
+        managerEventFrame.setVisible(true);
+        dispose();
+    }
+
     private javax.swing.JButton EditProfile;
     private javax.swing.JButton RegisterEvent;
     private javax.swing.JButton backLogin;
     private javax.swing.JButton createEventBtn;
     private javax.swing.JButton showListEvent;
+    private javax.swing.JButton managerEventBtn;
 }

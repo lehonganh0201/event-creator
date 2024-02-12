@@ -32,7 +32,7 @@ public class UserDao {
 
     public User getUserById(int userId) {
         try (Connection connection = JDBCConnection.getConnection()) {
-            String sql = "SELECT * FROM USER WHERE UserId = ?";
+            String sql = "SELECT * FROM USERS WHERE UserId = ?";
             try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
                 preparedStatement.setInt(1, userId);
 

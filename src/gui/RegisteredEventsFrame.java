@@ -1,11 +1,18 @@
 package gui;
-
+/*
+ * @author HongAnh
+ * @created 07 / 02 / 2024 - 5:03 PM
+ * @project IntelliJ IDEA
+ * @social Github: https://github.com/lehonganh0201
+ */
 import domain.Event;
 import domain.User;
 import service.EventService;
 import service.UserService;
 
 import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import java.awt.*;
@@ -19,7 +26,9 @@ public class RegisteredEventsFrame extends JFrame {
     private final EventService eventService;
     private final UserService userService;
 
-    public static User user;
+    public static RegisteredEventsFrame getInstance(){
+        return new RegisteredEventsFrame(LoginFrame.user);
+    }
 
     public RegisteredEventsFrame(User user) {
         eventService = new EventService();
@@ -55,6 +64,26 @@ public class RegisteredEventsFrame extends JFrame {
         TableColumn showMoreColumn = eventTable.getColumn("Show More");
         showMoreColumn.setCellRenderer(new ButtonRenderer());
         showMoreColumn.setCellEditor(new ButtonEditor(new JCheckBox()));
+
+        eventTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+            @Override
+            public void valueChanged(ListSelectionEvent e) {
+                if (!e.getValueIsAdjusting()) {
+                    int selectedColumn = eventTable.getSelectedColumn();
+                    int lastColumn = eventTable.getColumnCount() - 1;
+
+
+                    if (selectedColumn != lastColumn) {
+                        int selectedRow = eventTable.getSelectedRow();
+                        if (selectedRow != -1) {
+                            int eventId = (int) eventTable.getValueAt(selectedRow, 0);
+                            Event selectedEvent = eventService.getEventById(eventId);
+                            openCreatePostFrame(selectedEvent);
+                        }
+                    }
+                }
+            }
+        });
     }
 
     private void updateEventData(List<Event> userEvents) {
@@ -80,5 +109,16 @@ public class RegisteredEventsFrame extends JFrame {
         MainScreen mainScreen = new MainScreen();
         mainScreen.setVisible(true);
         this.dispose();
+    }
+
+    public void openDetailFrame(Event event){
+        ViewEventDetailsFrame viewEventDetailsFrame = new ViewEventDetailsFrame(event);
+        viewEventDetailsFrame.setVisible(true);
+        this.dispose();
+    }
+
+    private void openCreatePostFrame(Event event){
+        CreatePost post = new CreatePost(event);
+        post.setVisible(true);
     }
 }

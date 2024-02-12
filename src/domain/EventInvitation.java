@@ -3,7 +3,12 @@ package domain;
 import domain.EventEnum.InvitationResponseType;
 
 import java.sql.Date;
-
+/*
+ * @author HongAnh
+ * @created 07 / 02 / 2024 - 5:03 PM
+ * @project IntelliJ IDEA
+ * @social Github: https://github.com/lehonganh0201
+ */
 public class EventInvitation {
     private Event event;
     private User user;

@@ -1,5 +1,10 @@
 package domain;
-
+/*
+ * @author HongAnh
+ * @created 07 / 02 / 2024 - 5:03 PM
+ * @project IntelliJ IDEA
+ * @social Github: https://github.com/lehonganh0201
+ */
 
 import domain.EventEnum.EventStatus;
 
@@ -68,6 +73,19 @@ public class Event {
     }
 
     public Event() {
+    }
+
+    public Event(int eventId, String name, Date creationDate, Date registrationEndDate, Date startDateTime, Date endDateTime, String place, int capacity, double price, int creationUserId) {
+        this.eventId = eventId;
+        this.name = name;
+        this.creationDate = creationDate;
+        this.registrationEndDate = registrationEndDate;
+        this.startDateTime = startDateTime;
+        this.endDateTime = endDateTime;
+        this.place = place;
+        this.price = price;
+        this.capacity = capacity;
+        this.creationUserId = creationUserId;
     }
 
     public List<UserEvent> getUsers() {

@@ -149,11 +149,13 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public boolean registerForEvent(User user, Event event) {
+    public boolean registerForEvent(User user, Event event,boolean check) {
         try (Connection connection = JDBCConnection.getConnection()) {
-            if (isUserRegisteredForEvent(connection, user.getUserId(), event.getEventId())) {
-                System.out.println("User is already registered for the event.");
-                return false;
+            if(check){
+                if (isUserRegisteredForEvent(connection, user.getUserId(), event.getEventId())) {
+                    System.out.println("User is already registered for the event.");
+                    return false;
+                }
             }
 
             String sql = "INSERT INTO USER_EVENT(UserId, EventId) VALUES (?, ?)";

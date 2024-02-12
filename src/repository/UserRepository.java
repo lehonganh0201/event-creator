@@ -21,7 +21,7 @@ public interface UserRepository {
 
     // Tham Gia Sự Kiện
 
-    boolean registerForEvent(User user, Event event);
+    boolean registerForEvent(User user, Event event,boolean check);
 
     boolean createEvent(Event event);
 

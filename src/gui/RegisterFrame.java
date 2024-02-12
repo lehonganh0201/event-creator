@@ -9,9 +9,11 @@ import service.UserService;
 
 import java.awt.event.ActionEvent;
 
-/**
- *
- * @author PC
+/*
+ * @author HongAnh
+ * @created 07 / 02 / 2024 - 5:03 PM
+ * @project IntelliJ IDEA
+ * @social Github: https://github.com/lehonganh0201
  */
 public class RegisterFrame extends javax.swing.JFrame {
 

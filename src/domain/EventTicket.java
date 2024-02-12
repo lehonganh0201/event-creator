@@ -1,5 +1,10 @@
 package domain;
-
+/*
+ * @author HongAnh
+ * @created 07 / 02 / 2024 - 5:03 PM
+ * @project IntelliJ IDEA
+ * @social Github: https://github.com/lehonganh0201
+ */
 import java.sql.Date;
 
 public class EventTicket {

@@ -122,4 +122,24 @@ public class EventService {
     public void updateUserRole(User user, UserRole role) {
 
     }
+
+    public void insertUserRole(User user,int roleId){
+        eventRepository.insertUserRole(user.getUserId(), roleId);
+    }
+
+    public Event getEventById(int eventId) {
+        return eventRepository.getEventById(eventId);
+    }
+
+    public Event getEventByInfo(Event event){
+        return eventRepository.getEventByInfo(event);
+    }
+
+    public List<Event> getEventByUserId(int id){
+        return eventRepository.getEventByCreationId(id);
+    }
+
+    public List<User> getUserByEvent(Event event){
+        return eventRepository.getUserFromEvent(event);
+    }
 }

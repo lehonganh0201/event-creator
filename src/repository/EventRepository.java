@@ -10,6 +10,11 @@ public interface EventRepository {
 
     void updateEventInformation(String name, String description, String time, String location);
 
+    Event getEventByInfo(Event event);
+
+    List<Event> getEventByCreationId(int id);
+
+
     // Quản Lý Bài Đăng và Thảo Luận
 
     List<EventPost> getEventPosts();
@@ -44,5 +49,7 @@ public interface EventRepository {
 
     List<UserRole> getUserRoles();
 
-    void updateUserRole(User user, UserRole role);
+    void updateUserRole(User user, int roleId);
+
+    public void insertUserRole(int userId, int roleId);
 }

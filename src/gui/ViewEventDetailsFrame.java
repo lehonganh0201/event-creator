@@ -5,20 +5,30 @@
 package gui;
 
 import domain.Event;
+import domain.EventPost;
 import domain.User;
+import service.EventService;
 import service.UserService;
 
-/**
- *
- * @author PC
+import javax.swing.*;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/*
+ * @author HongAnh
+ * @created 07 / 02 / 2024 - 5:03 PM
+ * @project IntelliJ IDEA
+ * @social Github: https://github.com/lehonganh0201
  */
-public class viewEventDetailsFrame extends javax.swing.JFrame {
+public class ViewEventDetailsFrame extends javax.swing.JFrame {
 
     /**
-     * Creates new form viewEventDetailsFrame
+     * Creates new form ViewEventDetailsFrame
      */
-    public viewEventDetailsFrame(Event event) {
+    public ViewEventDetailsFrame(Event event) {
         userService = new UserService();
+        eventService = new EventService();
         initComponents(event);
         setLocationRelativeTo(null);
 
@@ -49,10 +59,14 @@ public class viewEventDetailsFrame extends javax.swing.JFrame {
         PlaceLabel = new javax.swing.JLabel();
         PriceLabel = new javax.swing.JLabel();
         OrganizersLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        contentText = new javax.swing.JTextArea();
+        usernameLabel = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
-        eventName.setText(event.getName());
+
         StartDateLabel.setText(String.valueOf(event.getStartDateTime()));
         EndDateLabel.setText(String.valueOf(event.getEndDateTime()));
         PriceLabel.setText(String.valueOf(event.getPrice()));
@@ -61,7 +75,7 @@ public class viewEventDetailsFrame extends javax.swing.JFrame {
         OrganizersLabel.setText(user.getFullName());
 
         eventName.setFont(new java.awt.Font("Segoe UI", 0, 36)); // NOI18N
-        eventName.setText("Event Name");
+        eventName.setText(event.getName());
 
         jLabel1.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
         jLabel1.setText("Start Date:");
@@ -92,7 +106,7 @@ public class viewEventDetailsFrame extends javax.swing.JFrame {
         JoinBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 JoinBtnActionPerformed(evt);
-
+                openRegisteredEvent();
             }
         });
 
@@ -113,15 +127,39 @@ public class viewEventDetailsFrame extends javax.swing.JFrame {
 
         OrganizersLabel.setFont(new java.awt.Font("Segoe UI", 0, 14)); // NOI18N
 
+        List<EventPost> eventPosts = userService.viewEventPosts(event);
+        jPanel1 = new javax.swing.JPanel();
+        jPanel1.setLayout(new GridLayout(eventPosts.size(), 1)); // Sử dụng GridLayout để chia các post thành các hàng
+
+        for(EventPost post : eventPosts) {
+            JPanel postPanel = new JPanel();
+            postPanel.setLayout(new BorderLayout());
+
+            User postUser = userService.getUserById(post.getUser().getUserId());
+            JLabel postUsernameLabel = new javax.swing.JLabel();
+            postUsernameLabel.setFont(new java.awt.Font("Segoe UI", 0, 14));
+            postUsernameLabel.setText(postUser.getFullName());
+
+            JTextArea postContentText = new javax.swing.JTextArea();
+            postContentText.setColumns(20);
+            postContentText.setRows(5);
+            postContentText.setText(post.getText());
+            postContentText.setEditable(false);
+            JScrollPane postScrollPane = new JScrollPane(postContentText);
+
+            postPanel.add(postUsernameLabel, BorderLayout.NORTH);
+            postPanel.add(postScrollPane, BorderLayout.CENTER);
+
+            jPanel1.add(postPanel);
+        }
+
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                         .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addGroup(layout.createSequentialGroup()
-                                                .addGap(101, 101, 101)
-                                                .addComponent(eventName))
                                         .addGroup(layout.createSequentialGroup()
                                                 .addContainerGap()
                                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -156,8 +194,14 @@ public class viewEventDetailsFrame extends javax.swing.JFrame {
                                                                 .addComponent(OrganizersLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 171, javax.swing.GroupLayout.PREFERRED_SIZE)
                                                                 .addGap(0, 0, Short.MAX_VALUE))))
                                         .addGroup(layout.createSequentialGroup()
-                                                .addContainerGap()
-                                                .addComponent(BackBtn)))
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addGap(101, 101, 101)
+                                                                .addComponent(eventName))
+                                                        .addGroup(layout.createSequentialGroup()
+                                                                .addContainerGap()
+                                                                .addComponent(BackBtn)))
+                                                .addGap(0, 0, Short.MAX_VALUE)))
                                 .addContainerGap())
                         .addGroup(layout.createSequentialGroup()
                                 .addGap(43, 43, 43)
@@ -165,6 +209,10 @@ public class viewEventDetailsFrame extends javax.swing.JFrame {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(JoinBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(64, 64, 64))
+                        .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addContainerGap()
+                                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
         );
         layout.setVerticalGroup(
                 layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -172,12 +220,13 @@ public class viewEventDetailsFrame extends javax.swing.JFrame {
                                 .addContainerGap()
                                 .addComponent(eventName)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                                        .addComponent(JLabel2)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                         .addComponent(StartDateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jLabel1)
-                                        .addComponent(jLabel6)
-                                        .addComponent(EndDateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                        .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.TRAILING)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                                .addComponent(JLabel2)
+                                                .addComponent(jLabel6)
+                                                .addComponent(EndDateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(Jlabel3)
@@ -198,20 +247,22 @@ public class viewEventDetailsFrame extends javax.swing.JFrame {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                         .addComponent(LeaveBtn)
                                         .addComponent(JoinBtn))
-                                .addGap(44, 44, 44)
+                                .addGap(18, 18, 18)
                                 .addComponent(BackBtn)
-                                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addContainerGap())
         );
 
         pack();
-    }// </editor-fold>
+    }
 
     private void LeaveBtnActionPerformed(java.awt.event.ActionEvent evt,Event event) {
         userService.cancelEventRegistration(LoginFrame.user,event);
     }
 
     private void JoinBtnActionPerformed(java.awt.event.ActionEvent evt) {
-        // TODO add your handling code here:
+        eventService.insertUserRole(LoginFrame.user,3);
     }
 
     private void openRegisteredEvent(){
@@ -237,12 +288,18 @@ public class viewEventDetailsFrame extends javax.swing.JFrame {
     private javax.swing.JLabel PlaceLabel;
     private javax.swing.JLabel PriceLabel;
     private javax.swing.JLabel StartDateLabel;
+    private javax.swing.JTextArea contentText;
     private javax.swing.JLabel eventName;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel usernameLabel;
+
     private final UserService userService;
+    private final EventService eventService;
     // End of variables declaration
 }
