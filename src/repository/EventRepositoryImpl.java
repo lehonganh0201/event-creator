@@ -143,6 +143,21 @@ public class EventRepositoryImpl implements EventRepository{
     @Override
     public void insertUserRole(int userId, int roleId) {
         try (Connection connection = JDBCConnection.getConnection()) {
+            // Kiểm tra sự tồn tại của userId và roleId trong bảng user_role
+            String checkUserRoleSql = "SELECT COUNT(*) FROM user_role WHERE userId = ? AND roleId = ?";
+            try (PreparedStatement checkUserRoleStatement = connection.prepareStatement(checkUserRoleSql)) {
+                checkUserRoleStatement.setInt(1, userId);
+                checkUserRoleStatement.setInt(2, roleId);
+                ResultSet userRoleResultSet = checkUserRoleStatement.executeQuery();
+                userRoleResultSet.next(); // Di chuyển con trỏ đến hàng kết quả đầu tiên
+                int rowCount = userRoleResultSet.getInt(1);
+                if (rowCount > 0) {
+                    System.out.println("User role with userId " + userId + " and roleId " + roleId + " already exists in USER_ROLE table.");
+                    return; // Kết thúc phương thức nếu đã tồn tại
+                }
+            }
+
+            // Thêm userId và roleId vào bảng user_role
             String insertUserRoleSql = "INSERT INTO user_role (userId, roleId) VALUES (?, ?)";
             try (PreparedStatement insertUserRoleStatement = connection.prepareStatement(insertUserRoleSql)) {
                 insertUserRoleStatement.setInt(1, userId);
@@ -160,6 +175,7 @@ public class EventRepositoryImpl implements EventRepository{
             e.printStackTrace();
         }
     }
+
 
     public List<User> getUserFromEvent(Event event){
         List<User> list = new ArrayList<>();
@@ -181,6 +197,107 @@ public class EventRepositoryImpl implements EventRepository{
         }
         return list;
     }
+
+    public boolean deleteEventsByEventId(int eventId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "DELETE FROM EVENT WHERE eventId = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, eventId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            // Trả về true nếu có ít nhất một dòng được xóa
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return false;
+    }
+
+    public boolean deleteUserEventsByEventId(int eventId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "DELETE FROM USER_EVENT WHERE eventId = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, eventId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            // Trả về true nếu có ít nhất một dòng được xóa
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return false;
+    }
+
+    public boolean deletePostsByEventId(int eventId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "DELETE FROM EVENT_POST WHERE eventId = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, eventId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            // Trả về true nếu có ít nhất một dòng được xóa
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return false;
+    }
+
+    public List<Event> getEventByName(String name) {
+        List<Event> list = new ArrayList<>();
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "SELECT * FROM EVENT WHERE name LIKE ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1, "%" + name + "%");
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while (resultSet.next()) {
+                Event event = extractEventFromResultSet(resultSet);
+                list.add(event);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return list;
+    }
+
+    public int countEventRegisteredForMonth(int month, int year) {
+        int count = 0;
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "SELECT COUNT(*) FROM EVENT WHERE MONTH(creationDate) = ? AND YEAR(creationDate) = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, month);
+            preparedStatement.setInt(2, year);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                count = resultSet.getInt(1);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return count;
+    }
+
+    public void deleteEventFromAllowedGroup(int eventId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "DELETE FROM allowed_event_group WHERE eventId = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, eventId);
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Data for event with eventId " + eventId + " deleted from allowed_event_group table.");
+            } else {
+                System.out.println("No data found for event with eventId " + eventId + " in allowed_event_group table.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private User extractUserFromResultSet(ResultSet resultSet) throws SQLException {
         User user = new User();

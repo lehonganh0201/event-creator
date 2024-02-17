@@ -156,8 +156,19 @@ public class LoginFrame extends javax.swing.JFrame {
         }
         else {
             user.setUserId(userService.getUserId(email,password));
-            openMainScreenFrame();
+            if(userService.managerAdminAccess(user)){
+                openAdminManagerFrame();
+            }
+            else {
+                openMainScreenFrame();
+            }
         }
+    }
+
+    private void openAdminManagerFrame(){
+        AdminHome adminHome = new AdminHome(null);
+        adminHome.setVisible(true);
+        dispose();
     }
 
     private void openMainScreenFrame() {

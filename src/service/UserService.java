@@ -39,7 +39,7 @@ public class UserService {
     }
 
     public void updatePersonalInformation(User user) {
-        if(user.getFirstName().trim().isEmpty() || user.getLastName().trim().isEmpty() || user.getEmail().trim().isEmpty()){
+        if(user.getFirstName().trim().isEmpty() || user.getLastName().trim().isEmpty() || user.getEmail().trim().isEmpty() || user.getPassword().trim().isEmpty()){
             System.out.println("Cannot updated your information");
             return;
         }
@@ -94,9 +94,21 @@ public class UserService {
         return userRepository.joinGroup(user, group);
     }
 
+    public Group getGroup(){
+        return userRepository.getGroupLast();
+    }
+
     
     public boolean createGroup(User user, Group group) {
         return userRepository.createGroup(user, group);
+    }
+
+    public void addEventToGroup(Event event,Group group){
+        userRepository.addEventToGroup(event.getEventId(),group.getGroupId());
+    }
+
+    public void addUserToGroup(User user,Group group){
+        userRepository.addUserToGroup(user.getUserId(),group.getGroupId());
     }
 
     
@@ -149,8 +161,46 @@ public class UserService {
         userRepository.sendEventInvitation(user, event, invitedUsers);
     }
 
+    public boolean managerAdminAccess(User user){
+        return userRepository.acceptAdmin(user.getUserId());
+    }
+
+    public List<User> getUserList(){
+        return userRepository.showListUser();
+    }
+
+    public boolean deleteUser(User user){
+        if(managerAdminAccess(user)){
+            System.out.println("Cannot delete admin account");
+            return false;
+        }
+        else {
+            userRepository.deleteUserFromGroup(user.getUserId());
+            userRepository.deleteUserEventsByUserId(user.getUserId());
+            userRepository.deleteEventsByUserId(user.getUserId());
+            userRepository.deletePostsByUserId(user.getUserId());
+            userRepository.deleteUserRolesByUserId(user.getUserId());
+            return userRepository.deleteUser(user.getUserId());
+        }
+    }
     
     public boolean updateRole(User user, Group group, Role role) {
         return userRepository.updateRole(user, group, role);
+    }
+
+    public List<Group> getListGroup(Event event){
+        return userRepository.getListGroup(event.getEventId());
+    }
+
+    public List<User> getListByEmail(String e){
+        return userRepository.getListUserByEmail(e);
+    }
+
+    public int countUser(int month,int year){
+        return userRepository.countUserRegisterForMonth(month,year);
+    }
+
+    public Group getGroupById(int id) {
+        return userRepository.getGroupById(id);
     }
 }

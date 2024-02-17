@@ -35,6 +35,9 @@ public class Group {
         ++n;
     }
 
+    public Group() {
+    }
+
     public int getGroupId() {
         return groupId;
     }

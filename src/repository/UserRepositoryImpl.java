@@ -24,13 +24,16 @@ public class UserRepositoryImpl implements UserRepository {
     public boolean registerUser(User user) {
         if (!userDao.isEmailExists(user.getEmail())) {
             try (Connection connection = JDBCConnection.getConnection()) {
-                String sql = "INSERT INTO USERS(firstName, lastName, email, password) VALUES (?, ?, ?, ?)";
+                String sql = "INSERT INTO USERS(firstName, lastName, email, password ,creationDate) VALUES (?, ?, ?, ?, ?)";
                 try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
 
                     preparedStatement.setString(1, user.getFirstName());
                     preparedStatement.setString(2, user.getLastName());
                     preparedStatement.setString(3, user.getEmail());
                     preparedStatement.setString(4, user.getPassword());
+                    Calendar currentCalendar = Calendar.getInstance();
+                    Date currentDate = new Date(currentCalendar.getTimeInMillis());
+                    preparedStatement.setDate(5, new java.sql.Date(currentDate.getTime()));
 
                     int rowsAffected = preparedStatement.executeUpdate();
 
@@ -328,7 +331,6 @@ public class UserRepositoryImpl implements UserRepository {
                 System.out.println("User is already a member of the specified group.");
                 return false;
             }
-
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
@@ -338,39 +340,108 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public boolean createGroup(User user, Group group) {
         try (Connection connection = JDBCConnection.getConnection()) {
-            if (!isGroupNameUnique(connection, group.getName())) {
-                System.out.println("Group name is already taken. Choose a different name.");
-                return false;
-            }
-
-            String createGroupSql = "INSERT INTO EVENT_GROUP(Name, Description) VALUES (?, ?)";
+            String createGroupSql = "INSERT INTO EVENTGROUP(name, description) VALUES (?, ?)";
             try (PreparedStatement createGroupStatement = connection.prepareStatement(createGroupSql, PreparedStatement.RETURN_GENERATED_KEYS)) {
                 createGroupStatement.setString(1, group.getName());
                 createGroupStatement.setString(2, group.getDescription());
 
                 int rowsAffected = createGroupStatement.executeUpdate();
-                if (rowsAffected > 0) {
-                    try (ResultSet generatedKeys = createGroupStatement.getGeneratedKeys()) {
-                        if (generatedKeys.next()) {
-                            int groupId = generatedKeys.getInt(1);
 
-                            String addUserToGroupSql = "INSERT INTO USER_GROUP(UserId, GroupId) VALUES (?, ?)";
-                            try (PreparedStatement addUserToGroupStatement = connection.prepareStatement(addUserToGroupSql)) {
-                                addUserToGroupStatement.setInt(1, user.getUserId());
-                                addUserToGroupStatement.setInt(2, groupId);
-
-                                int addUserToGroupRowsAffected = addUserToGroupStatement.executeUpdate();
-                                return addUserToGroupRowsAffected > 0;
-                            }
-                        }
-                    }
-                }
             }
             JDBCConnection.closeConnection(connection);
         } catch (SQLException e) {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public void addEventToGroup(int eventId, int groupId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            // Kiểm tra xem event đã được phép tham gia vào group này chưa
+            String checkQuery = "SELECT * FROM allowed_event_group WHERE eventId = ? AND groupId = ?";
+            PreparedStatement checkStatement = connection.prepareStatement(checkQuery);
+            checkStatement.setInt(1, eventId);
+            checkStatement.setInt(2, groupId);
+            ResultSet resultSet = checkStatement.executeQuery();
+
+            // Nếu không tìm thấy bản ghi tương ứng trong bảng allowed_event_group
+            if (!resultSet.next()) {
+                // Thêm eventId và groupId vào bảng allowed_event_group
+                String insertQuery = "INSERT INTO allowed_event_group (eventId, groupId) VALUES (?, ?)";
+                PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
+                insertStatement.setInt(1, eventId);
+                insertStatement.setInt(2, groupId);
+                insertStatement.executeUpdate();
+                System.out.println("Event successfully added to group.");
+            } else {
+                System.out.println("Event is already allowed to join this group.");
+            }
+            JDBCConnection.closeConnection(connection);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void addUserToGroup(int userId, int groupId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            // Kiểm tra xem user đã tham gia vào group này chưa
+            String checkQuery = "SELECT * FROM user_group WHERE userId = ? AND groupId = ?";
+            PreparedStatement checkStatement = connection.prepareStatement(checkQuery);
+            checkStatement.setInt(1, userId);
+            checkStatement.setInt(2, groupId);
+            ResultSet resultSet = checkStatement.executeQuery();
+
+            // Nếu không tìm thấy bản ghi tương ứng trong bảng user_group
+            if (!resultSet.next()) {
+                // Thêm userId và groupId vào bảng user_group
+                String insertQuery = "INSERT INTO user_group (userId, groupId) VALUES (?, ?)";
+                PreparedStatement insertStatement = connection.prepareStatement(insertQuery);
+                insertStatement.setInt(1, userId);
+                insertStatement.setInt(2, groupId);
+                insertStatement.executeUpdate();
+                System.out.println("User successfully added to group.");
+            } else {
+                System.out.println("User is already a member of this group.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public Group getGroupLast(){
+        Group group = new Group();
+        try(Connection connection = JDBCConnection.getConnection()){
+            String sql = "SELECT * FROM EVENTGROUP WHERE groupId = (SELECT MAX(EVENTGROUP.groupId) FROM EVENTGROUP)";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                group.setGroupId(resultSet.getInt("groupId"));
+                group.setName(resultSet.getString("name"));
+                group.setDescription(resultSet.getString("description"));
+            }
+            JDBCConnection.closeConnection(connection);
+        }catch (Exception e){
+            System.out.println(e);
+        }
+        return group;
+    }
+
+    public void deleteUserFromGroup(int userId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "DELETE FROM user_group WHERE userId = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, userId);
+            int rowsAffected = preparedStatement.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Data for user with userId " + userId + " deleted from user_group table.");
+            } else {
+                System.out.println("No data found for user with userId " + userId + " in user_group table.");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -665,6 +736,186 @@ public class UserRepositoryImpl implements UserRepository {
         }
     }
 
+    public List<User> showListUser(){
+        List<User> list = new ArrayList<>();
+        try(Connection connection = JDBCConnection.getConnection()){
+            String sql = "SELECT * FROM USERS";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                User user = extractUserFromResultSet(resultSet);
+                list.add(user);
+            }
+            JDBCConnection.closeConnection(connection);
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+        return list;
+    }
+
+    public boolean acceptAdmin(int userId){
+        try (Connection connection = JDBCConnection.getConnection()){
+            String sql = "SELECT * FROM USER_ROLE WHERE userId = ? AND roleId = 1";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1,userId);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            return resultSet.next();
+        }catch (Exception e){
+            System.out.println(e);
+        }
+        return false;
+    }
+
+    public boolean deleteUser(int userId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            // Kiểm tra xem người dùng có phải là admin hay không trước khi xóa
+            if (acceptAdmin(userId)) {
+                // Nếu khong là admin, không cho phép xóa
+                System.out.println("Admin user cannot be deleted.");
+                return false;
+            } else {
+                String sql = "DELETE FROM USERS WHERE userID = ?";
+                PreparedStatement preparedStatement = connection.prepareStatement(sql);
+                preparedStatement.setInt(1, userId);
+
+                int rowsAffected = preparedStatement.executeUpdate();
+
+                // Trả về true nếu có ít nhất một dòng được xóa
+                return rowsAffected > 0;
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return false;
+    }
+
+    public boolean deleteEventsByUserId(int creationUserId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "DELETE FROM EVENT WHERE userID = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, creationUserId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            // Trả về true nếu có ít nhất một dòng được xóa
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return false;
+    }
+
+    public List<Group> getListGroup(int eventId){
+        List<Group> list = new ArrayList<>();
+        try(Connection connection = JDBCConnection.getConnection()) {
+            String sql = "SELECT * FROM EVENTGROUP JOIN allowed_event_group on EVENTGROUP.groupId = allowed_event_group.groupId WHERE allowed_event_group.eventId = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1,eventId);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                Group group = new Group();
+                group.setGroupId(resultSet.getInt("groupId"));
+                group.setName(resultSet.getString("name"));
+                group.setDescription(resultSet.getString("description"));
+                list.add(group);
+            }
+        }
+        catch (Exception e){
+            System.out.println(e);
+        }
+        return list;
+    }
+
+    public boolean deleteUserEventsByUserId(int userId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "DELETE FROM USER_EVENT WHERE userId = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, userId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            // Trả về true nếu có ít nhất một dòng được xóa
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return false;
+    }
+
+
+    public boolean deletePostsByUserId(int userId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "DELETE FROM EVENT_POST WHERE userId = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, userId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            // Trả về true nếu có ít nhất một dòng được xóa
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return false;
+    }
+
+    public boolean deleteUserRolesByUserId(int userId) {
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "DELETE FROM USER_ROLE WHERE userId = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, userId);
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            // Trả về true nếu có ít nhất một dòng được xóa
+            return rowsAffected > 0;
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return false;
+    }
+
+    public List<User> getListUserByEmail(String email){
+        List<User> list = new ArrayList<>();
+        try(Connection connection = JDBCConnection.getConnection()){
+            String sql = "SELECT * FROM USERS WHERE email = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setString(1,email);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            while(resultSet.next()){
+                User user = extractUserFromResultSet(resultSet);
+                list.add(user);
+            }
+        }catch (Exception e){
+            System.out.println(e);
+        }
+        return list;
+    }
+
+    public int countUserRegisterForMonth(int month, int year) {
+        int count = 0;
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "SELECT COUNT(*) FROM USERS WHERE MONTH(creationDate) = ? AND YEAR(creationDate) = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, month);
+            preparedStatement.setInt(2, year);
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                count = resultSet.getInt(1);
+            }
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+        return count;
+    }
+
+
     private Event extractEventFromResultSet(ResultSet resultSet) throws SQLException {
         Event event = new Event();
         event.setEventId(resultSet.getInt("eventId"));
@@ -682,7 +933,7 @@ public class UserRepositoryImpl implements UserRepository {
 
     private User extractUserFromResultSet(ResultSet resultSet) throws SQLException {
         User user = new User();
-        user.setUserId(resultSet.getInt("Id"));
+        user.setUserId(resultSet.getInt("userId"));
         user.setFirstName(resultSet.getString("firstName"));
         user.setLastName(resultSet.getString("lastName"));
         user.setEmail(resultSet.getString("email"));
@@ -725,7 +976,7 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     private boolean isGroupNameUnique(Connection connection, String groupName) throws SQLException {
-        String sql = "SELECT COUNT(*) FROM GROUP WHERE Name = ?";
+        String sql = "SELECT COUNT(*) FROM EVENTGROUP WHERE name = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
             preparedStatement.setString(1, groupName);
 
@@ -845,4 +1096,21 @@ public class UserRepositoryImpl implements UserRepository {
         return null;
     }
 
+    public Group getGroupById(int id) {
+        Group group = null;
+        try (Connection connection = JDBCConnection.getConnection()) {
+            String sql = "SELECT * FROM EVENTGROUP WHERE groupId = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            preparedStatement.setInt(1, id);
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                group = new Group();
+                group.setName(resultSet.getString("name"));
+                group.setGroupId(resultSet.getInt("groupId"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return group;
+    }
 }

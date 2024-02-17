@@ -97,7 +97,6 @@ public class ViewEventDetailsFrame extends javax.swing.JFrame {
         LeaveBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 LeaveBtnActionPerformed(evt,event);
-                openRegisteredEvent();
             }
         });
 
@@ -105,8 +104,7 @@ public class ViewEventDetailsFrame extends javax.swing.JFrame {
         JoinBtn.setText("Join");
         JoinBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                JoinBtnActionPerformed(evt);
-                openRegisteredEvent();
+                JoinBtnActionPerformed(evt,event);
             }
         });
 
@@ -261,8 +259,9 @@ public class ViewEventDetailsFrame extends javax.swing.JFrame {
         userService.cancelEventRegistration(LoginFrame.user,event);
     }
 
-    private void JoinBtnActionPerformed(java.awt.event.ActionEvent evt) {
-        eventService.insertUserRole(LoginFrame.user,3);
+    private void JoinBtnActionPerformed(java.awt.event.ActionEvent evt,Event event) {
+        ListGroupFrame listGroupFrame = new ListGroupFrame(event);
+        listGroupFrame.setVisible(true);
     }
 
     private void openRegisteredEvent(){

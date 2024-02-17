@@ -142,4 +142,25 @@ public class EventService {
     public List<User> getUserByEvent(Event event){
         return eventRepository.getUserFromEvent(event);
     }
+
+    public boolean deleteEvent(Event event){
+        eventRepository.deleteEventFromAllowedGroup(event.getEventId());
+        eventRepository.deleteUserEventsByEventId(event.getEventId());
+        eventRepository.deletePostsByEventId(event.getEventId());
+        return eventRepository.deleteEventsByEventId(event.getEventId());
+    }
+
+    public List<Event> getEventByName(String name){
+        if(name.trim().isEmpty()){
+            System.out.println("Search cannot blank");
+            return null;
+        }
+        else {
+            return eventRepository.getEventByName(name);
+        }
+    }
+
+    public int countEvent(int month,int year){
+        return eventRepository.countEventRegisteredForMonth(month, year);
+    }
 }

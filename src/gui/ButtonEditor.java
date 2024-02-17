@@ -7,6 +7,7 @@ package gui;
  */
 
 import domain.Event;
+import service.EventService;
 import service.UserService;
 
 import javax.swing.*;
@@ -20,10 +21,12 @@ public class ButtonEditor extends DefaultCellEditor{
     private boolean isPushed;
     private final UserService userService;
     private Event currentEvent = new Event();
+    private final EventService eventService;
 
     public ButtonEditor(JCheckBox checkBox) {
         super(checkBox);
         userService = new UserService();
+        eventService = new EventService();
         button = new JButton();
         button.setOpaque(true);
         button.addActionListener(new ActionListener() {
@@ -53,6 +56,9 @@ public class ButtonEditor extends DefaultCellEditor{
         if (isPushed) {
             if ("+".equals(label) && currentEvent.getEventId()!=0) {
                 userService.registerForEvent(LoginFrame.user, currentEvent,true);
+                eventService.insertUserRole(LoginFrame.user,3);
+                SendEmailFrame sendEmailFrame = new SendEmailFrame(LoginFrame.user,currentEvent);
+                sendEmailFrame.sendBtnActionPerformed(LoginFrame.user,currentEvent);
             }
             else if ("->".equals(label)){
                 RegisteredEventsFrame.getInstance().openDetailFrame(currentEvent);
